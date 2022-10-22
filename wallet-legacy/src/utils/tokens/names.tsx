@@ -1,8 +1,9 @@
 import React, { useContext, useState, useEffect } from 'react';
-import EventEmitter from 'events';
+
 import {
   useConnectionConfig,
 } from '../connection';
+import { EventEmitter} from 'events';
 import { useListener } from '../utils';
 import { clusterForEndpoint, MAINNET_BACKUP_URL, MAINNET_URL } from '../clusters';
 import { useCallback } from 'react';

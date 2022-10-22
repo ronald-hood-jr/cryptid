@@ -13,7 +13,8 @@
         "packages/client/core",
         "packages/client/cryptid",
         "packages/client/cli",
-        "packages/tests"
+        "packages/tests",
+        "./wallet"
     ],
     "devDependencies": {
         "@project-serum/anchor-cli": "https://github.com/kklas/anchor-nightly/releases/download/anchor-cli-latest/anchor-cli-0.25.0-7eb8ca8.tgz",

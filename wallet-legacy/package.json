@@ -104,7 +104,7 @@
     }
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.158",
+    "@types/chrome": "^0.0.198",
     "@types/react-copy-to-clipboard": "^5.0.1",
     "@welldone-software/why-did-you-render": "^6.2.1",
     "autoprefixer": "^9",
@@ -113,6 +113,6 @@
     "husky": "^4.3.6",
     "postcss": "^7",
     "prettier": "^2.2.1",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat"
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2"
   }
 }
