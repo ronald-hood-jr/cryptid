@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "jsx": "react",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "noEmitOnError": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "stripInternal": true,
+    "noUncheckedIndexedAccess": true
+},
+  "include": [
+    "src"
+  ]
+}

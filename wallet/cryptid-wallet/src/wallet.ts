@@ -22,26 +22,26 @@ import type {
     SignMessageOutput,
 } from '@wallet-standard/features';
 import bs58 from 'bs58';
-import { CryptidWalletAccount } from './account.js';
+import { CryptidWalletWalletAccount } from './account.js';
 import { icon } from './icon.js';
 import type { SolanaChain } from './solana.js';
 import { isSolanaChain, SOLANA_CHAINS } from './solana.js';
 import { bytesEqual } from './util.js';
-import type { Cryptid } from './window.js';
+import type { CryptidWallet } from './window.js';
 
-export type CryptidFeature = {
-    'cryptid:': {
-        cryptid: Cryptid;
+export type CryptidWalletFeature = {
+    'cryptidWallet:': {
+        cryptidWallet: CryptidWallet;
     };
 };
 
-export class CryptidWallet implements Wallet {
+export class CryptidWalletWallet implements Wallet {
     readonly #listeners: { [E in EventsNames]?: EventsListeners[E][] } = {};
     readonly #version = '1.0.0' as const;
-    readonly #name = 'Cryptid' as const;
+    readonly #name = 'Cryptid Wallet' as const;
     readonly #icon = icon;
-    #account: CryptidWalletAccount | null = null;
-    readonly #cryptid: Cryptid;
+    #account: CryptidWalletWalletAccount | null = null;
+    readonly #cryptidWallet: CryptidWallet;
 
     get version() {
         return this.#version;
@@ -65,7 +65,7 @@ export class CryptidWallet implements Wallet {
         SolanaSignAndSendTransactionFeature &
         SolanaSignTransactionFeature &
         SignMessageFeature &
-        CryptidFeature {
+        CryptidWalletFeature {
         return {
             'standard:connect': {
                 version: '1.0.0',
@@ -93,8 +93,8 @@ export class CryptidWallet implements Wallet {
                 version: '1.0.0',
                 signMessage: this.#signMessage,
             },
-            'cryptid:': {
-                cryptid: this.#cryptid,
+            'cryptidWallet:': {
+                cryptidWallet: this.#cryptidWallet,
             },
         };
     }
@@ -103,16 +103,16 @@ export class CryptidWallet implements Wallet {
         return this.#account ? [this.#account] : [];
     }
 
-    constructor(cryptid: Cryptid) {
-        if (new.target === CryptidWallet) {
+    constructor(cryptidWallet: CryptidWallet) {
+        if (new.target === CryptidWalletWallet) {
             Object.freeze(this);
         }
 
-        this.#cryptid = cryptid;
+        this.#cryptidWallet = cryptidWallet;
 
-        cryptid.on('connect', this.#connected, this);
-        cryptid.on('disconnect', this.#disconnected, this);
-        cryptid.on('accountChanged', this.#reconnected, this);
+        cryptidWallet.on('connect', this.#connected, this);
+        cryptidWallet.on('disconnect', this.#disconnected, this);
+        cryptidWallet.on('accountChanged', this.#reconnected, this);
 
         this.#connected();
     }
@@ -132,14 +132,14 @@ export class CryptidWallet implements Wallet {
     }
 
     #connected = () => {
-        const address = this.#cryptid.publicKey?.toBase58();
+        const address = this.#cryptidWallet.publicKey?.toBase58();
         if (address) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const publicKey = this.#cryptid.publicKey!.toBytes();
+            const publicKey = this.#cryptidWallet.publicKey!.toBytes();
 
             const account = this.#account;
             if (!account || account.address !== address || !bytesEqual(account.publicKey, publicKey)) {
-                this.#account = new CryptidWalletAccount({ address, publicKey });
+                this.#account = new CryptidWalletWalletAccount({ address, publicKey });
                 this.#emit('change', { accounts: this.accounts });
             }
         }
@@ -153,7 +153,7 @@ export class CryptidWallet implements Wallet {
     };
 
     #reconnected = () => {
-        if (this.#cryptid.publicKey) {
+        if (this.#cryptidWallet.publicKey) {
             this.#connected();
         } else {
             this.#disconnected();
@@ -162,7 +162,7 @@ export class CryptidWallet implements Wallet {
 
     #connect: ConnectMethod = async ({ silent } = {}) => {
         if (!this.#account) {
-            await this.#cryptid.connect(silent ? { onlyIfTrusted: true } : undefined);
+            await this.#cryptidWallet.connect(silent ? { onlyIfTrusted: true } : undefined);
         }
 
         this.#connected();
@@ -171,7 +171,7 @@ export class CryptidWallet implements Wallet {
     };
 
     #disconnect: DisconnectMethod = async () => {
-        await this.#cryptid.disconnect();
+        await this.#cryptidWallet.disconnect();
     };
 
     #signAndSendTransaction: SolanaSignAndSendTransactionMethod = async (...inputs) => {
@@ -186,7 +186,7 @@ export class CryptidWallet implements Wallet {
             if (account !== this.#account) throw new Error('invalid account');
             if (!isSolanaChain(chain)) throw new Error('invalid chain');
 
-            const { signature } = await this.#cryptid.signAndSendTransaction(
+            const { signature } = await this.#cryptidWallet.signAndSendTransaction(
                 VersionedTransaction.deserialize(transaction),
                 {
                     preflightCommitment,
@@ -217,7 +217,9 @@ export class CryptidWallet implements Wallet {
             if (account !== this.#account) throw new Error('invalid account');
             if (chain && !isSolanaChain(chain)) throw new Error('invalid chain');
 
-            const signedTransaction = await this.#cryptid.signTransaction(VersionedTransaction.deserialize(transaction));
+            const signedTransaction = await this.#cryptidWallet.signTransaction(
+                VersionedTransaction.deserialize(transaction)
+            );
 
             outputs.push({ signedTransaction: signedTransaction.serialize() });
         } else if (inputs.length > 1) {
@@ -236,7 +238,7 @@ export class CryptidWallet implements Wallet {
 
             const transactions = inputs.map(({ transaction }) => Transaction.from(transaction));
 
-            const signedTransactions = await this.#cryptid.signAllTransactions(transactions);
+            const signedTransactions = await this.#cryptidWallet.signAllTransactions(transactions);
 
             outputs.push(
                 ...signedTransactions.map((signedTransaction) => ({ signedTransaction: signedTransaction.serialize() }))
@@ -256,7 +258,7 @@ export class CryptidWallet implements Wallet {
             const { message, account } = inputs[0]!;
             if (account !== this.#account) throw new Error('invalid account');
 
-            const { signature } = await this.#cryptid.signMessage(message);
+            const { signature } = await this.#cryptidWallet.signMessage(message);
 
             outputs.push({ signedMessage: message, signature });
         } else if (inputs.length > 1) {

@@ -1,17 +1,17 @@
 import type { PublicKey, SendOptions, Transaction, TransactionSignature, VersionedTransaction } from '@solana/web3.js';
 
-export interface CryptidEvent {
+export interface CryptidWalletEvent {
     connect(...args: unknown[]): unknown;
     disconnect(...args: unknown[]): unknown;
     accountChanged(...args: unknown[]): unknown;
 }
 
-export interface CryptidEventEmitter {
-    on<E extends keyof CryptidEvent>(event: E, listener: CryptidEvent[E], context?: any): void;
-    off<E extends keyof CryptidEvent>(event: E, listener: CryptidEvent[E], context?: any): void;
+export interface CryptidWalletEventEmitter {
+    on<E extends keyof CryptidWalletEvent>(event: E, listener: CryptidWalletEvent[E], context?: any): void;
+    off<E extends keyof CryptidWalletEvent>(event: E, listener: CryptidWalletEvent[E], context?: any): void;
 }
 
-export interface Cryptid extends CryptidEventEmitter {
+export interface CryptidWallet extends CryptidWalletEventEmitter {
     publicKey: PublicKey | null;
     connect(options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }>;
     disconnect(): Promise<void>;
